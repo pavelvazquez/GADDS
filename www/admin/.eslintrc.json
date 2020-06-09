@@ -1,0 +1,14 @@
+{
+  "extends": "eslint:recommended",
+  "env": {
+    "browser": true,
+    "es6": true,
+    "jquery": true
+  },
+  "globals": {
+    "angular": true
+  },
+  "rules": {
+    "no-console": 0
+  }
+}

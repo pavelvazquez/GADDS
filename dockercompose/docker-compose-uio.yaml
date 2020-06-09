@@ -1,0 +1,131 @@
+#
+# Copyright Altoros. All Rights Reserved.
+#
+
+version: '2'
+
+volumes:
+  peer0.uio.158.39.48.220:
+  peer1.uio.158.39.48.220:
+
+services:
+
+  ca.uio.158.39.48.220:
+    container_name: ca.uio.158.39.48.220
+    image: hyperledger/fabric-ca:1.4.4
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.uio.158.39.48.220-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/48254fe169a90dde77a9d0dfa4779b8a14b37f435128251e86c45e98eff09c32_sk
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.uio.158.39.48.220-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/48254fe169a90dde77a9d0dfa4779b8a14b37f435128251e86c45e98eff09c32_sk
+#    ports:
+#      - 9054:7054
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ../artifacts/crypto-config/peerOrganizations/uio.158.39.48.220/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ../artifacts/fabric-ca-server-config-uio.yaml:/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
+
+  peer0.uio.158.39.48.220:
+    container_name: peer0.uio.158.39.48.220
+    extends:
+      file: base-intercept.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.uio.158.39.48.220
+      - CORE_PEER_LOCALMSPID=uioMSP
+      - CORE_PEER_ADDRESS=peer0.uio.158.39.48.220:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.uio.158.39.48.220:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.uio.158.39.48.220:7051
+    ports:
+      - 9051:7051
+      - 9053:7053
+    volumes:
+        - ../artifacts/crypto-config/peerOrganizations/uio.158.39.48.220/peers/peer0.uio.158.39.48.220/:/etc/hyperledger/crypto/peer
+        - peer0.uio.158.39.48.220:/var/hyperledger/production
+    depends_on:
+      - ca.uio.158.39.48.220
+    
+
+  peer1.uio.158.39.48.220:
+    container_name: peer1.uio.158.39.48.220
+    extends:
+      file: base-intercept.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.uio.158.39.48.220
+      - CORE_PEER_LOCALMSPID=uioMSP
+      - CORE_PEER_ADDRESS=peer1.uio.158.39.48.220:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.uio.158.39.48.220:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.uio.158.39.48.220:7051
+    ports:
+      - 9056:7051
+      - 9058:7053
+    volumes:
+        - ../artifacts/crypto-config/peerOrganizations/uio.158.39.48.220/peers/peer1.uio.158.39.48.220/:/etc/hyperledger/crypto/peer
+        - peer1.uio.158.39.48.220:/var/hyperledger/production
+    depends_on:
+      - ca.uio.158.39.48.220
+    
+
+  # fabric-rest api server
+  api.uio.158.39.48.220:
+    extends:
+      file: base-intercept.yaml
+      service: api-base
+    container_name: api.uio.158.39.48.220
+    ports:
+      - 8083:4000
+        #expose:
+        #- "9000"
+    environment:
+      - ORG=uio
+      - PORT=4000
+ #   volumes:
+ #     - ../artifacts/hosts/uio/api_hosts:/etc/hosts
+    depends_on:
+      - peer0.uio.158.39.48.220
+      - peer1.uio.158.39.48.220
+
+  cli.158.39.48.220:
+    container_name: cli.158.39.48.220
+    extends:
+      file: base-intercept.yaml
+      service: cli-base
+    volumes:
+      - ../artifacts/crypto-config/ordererOrganizations/158.39.48.220/orderers/orderer.158.39.48.220/tls:/etc/hyperledger/crypto/orderer/tls
+
+  cli.uio.158.39.48.220:
+    container_name: cli.uio.158.39.48.220
+    extends:
+      service: cli.158.39.48.220
+    environment:
+      - CORE_PEER_LOCALMSPID=uioMSP
+    volumes:
+    #    - ../artifacts/hosts/uio/cli_hosts:/etc/hosts
+        - ../artifacts/crypto-config/peerOrganizations/uio.158.39.48.220/users/Admin@uio.158.39.48.220:/etc/hyperledger/crypto/peer
+    
+
+  cliNoCryptoVolume.uio.158.39.48.220:
+    container_name: cliNoCryptoVolume.uio.158.39.48.220
+    extends:
+      file: base-intercept.yaml
+      service: cli-base
+    environment:
+      - CORE_PEER_LOCALMSPID=uioMSP
+    volumes:
+        - ../artifacts/hosts/uio/cli_hosts:/etc/hosts
+
+  www.uio.158.39.48.220:
+    extends:
+      file: base-intercept.yaml
+      service: www-base
+    container_name: www.uio.158.39.48.220
+    ports:
+      - 4002:80
+    volumes:
+      - ../www:/usr/share/nginx/html:ro
+      - ../artifacts/nginx-uio.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api.uio.158.39.48.220

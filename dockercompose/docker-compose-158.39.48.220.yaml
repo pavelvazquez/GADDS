@@ -1,0 +1,88 @@
+#
+# Copyright Altoros. All Rights Reserved.
+#
+
+version: '2'
+
+volumes:
+  orderer.158.39.48.220:
+
+services:
+
+  orderer.158.39.48.220:
+    container_name: orderer.158.39.48.220
+    image: hyperledger/fabric-orderer:1.4.4
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/crypto/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/crypto/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/crypto/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/crypto/orderer/tls/ca.crt]
+      - ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s
+      - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
+      - ORDERER_KAFKA_VERBOSE=true
+    working_dir: /etc/hyperledger
+    command: orderer
+    ports:
+      - 7050:7050
+    volumes:
+        - ../artifacts/channel:/etc/hyperledger/configtx
+        - ../artifacts/crypto-config/ordererOrganizations/158.39.48.220/orderers/orderer.158.39.48.220/:/etc/hyperledger/crypto/orderer
+        - orderer.158.39.48.220:/var/hyperledger/production/orderer
+#        - ../artifacts/crypto-config/peerOrganizations/glasgow.158.39.48.220/peers/peer0.glasgow.158.39.48.220/:/etc/hyperledger/crypto/peerglasgow
+#        - ../artifacts/crypto-config/peerOrganizations/imperial.158.39.48.220/peers/peer0.imperial.158.39.48.220/:/etc/hyperledger/crypto/peerimperial
+#        - ../artifacts/crypto-config/peerOrganizations/uio.158.39.48.220/peers/peer0.uio.158.39.48.220/:/etc/hyperledger/crypto/peeruio
+
+  cli.158.39.48.220:
+    container_name: cli.158.39.48.220
+    extends:
+      file: base-intercept.yaml
+      service: cli-base
+#    volumes:
+#       - ../artifacts/hosts/glasgow/cli_hosts:/etc/hosts
+#      - ../artifacts/crypto-config/ordererOrganizations/158.39.48.220/orderers/orderer.158.39.48.220/tls:/etc/hyperledger/crypto/orderer/tls
+    extra_hosts:
+      - orderer.158.39.48.220:158.39.48.220
+      - www.158.39.48.220:158.39.48.220
+      - www.glasgow.158.39.48.220:158.39.75.99
+      - www.imperial.158.39.48.220:158.39.75.229
+      - www.uio.158.39.48.220:158.37.63.8
+
+  # simple http server to disseminate certificates
+  www.158.39.48.220:
+    extends:
+      file: base-intercept.yaml
+      service: www-base
+    container_name: www.158.39.48.220
+    ports:
+      - 8080:80
+      
+#  zookeeper.158.39.48.220:
+#    container_name: zookeeper.158.39.48.220
+#    image: hyperledger/fabric-zookeeper:0.4.14
+#    environment:
+#      ZOOKEEPER_CLIENT_PORT: 32181
+#      ZOOKEEPER_TICK_TIME: 2000
+#
+#  kafka.158.39.48.220:
+#    container_name: kafka.158.39.48.220
+#    image: hyperledger/fabric-kafka:0.4.14
+#    depends_on:
+#    - zookeeper.example.com
+#    environment:
+#      - KAFKA_BROKER_ID=1
+#      - KAFKA_ZOOKEEPER_CONNECT=zookeeper.158.39.48.220:2181
+#      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka.158.39.48.220:9092
+#      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+#      - KAFKA_MESSAGE_MAX_BYTES=1048576 # 1 * 1024 * 1024 B
+#      - KAFKA_REPLICA_FETCH_MAX_BYTES=1048576 # 1 * 1024 * 1024 B
+#      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+#      - KAFKA_LOG_RETENTION_MS=-1
+#      - KAFKA_MIN_INSYNC_REPLICAS=1
+#      - KAFKA_DEFAULT_REPLICATION_FACTOR=1
+

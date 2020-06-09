@@ -1,0 +1,83 @@
+#
+# Copyright Altoros. All Rights Reserved.
+#
+
+version: '2'
+
+volumes:
+  orderer.DOMAIN:
+
+services:
+
+  orderer.DOMAIN:
+    container_name: orderer.DOMAIN
+    image: hyperledger/fabric-orderer:FABRIC_VERSION
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/crypto/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/crypto/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/crypto/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/crypto/orderer/tls/ca.crt]
+      - ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s
+      - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
+      - ORDERER_KAFKA_VERBOSE=true
+    working_dir: /etc/hyperledger
+    command: orderer
+    ports:
+      - ORDERER_PORT:7050
+    volumes:
+        - ../artifacts/channel:/etc/hyperledger/configtx
+        - ../artifacts/crypto-config/ordererOrganizations/DOMAIN/orderers/orderer.DOMAIN/:/etc/hyperledger/crypto/orderer
+        - orderer.DOMAIN:/var/hyperledger/production/orderer
+#        - ../artifacts/crypto-config/peerOrganizations/ORG1.DOMAIN/peers/peer0.ORG1.DOMAIN/:/etc/hyperledger/crypto/peerORG1
+#        - ../artifacts/crypto-config/peerOrganizations/ORG2.DOMAIN/peers/peer0.ORG2.DOMAIN/:/etc/hyperledger/crypto/peerORG2
+#        - ../artifacts/crypto-config/peerOrganizations/ORG3.DOMAIN/peers/peer0.ORG3.DOMAIN/:/etc/hyperledger/crypto/peerORG3
+
+  cli.DOMAIN:
+    container_name: cli.DOMAIN
+    extends:
+      file: base-intercept.yaml
+      service: cli-base
+#    volumes:
+#       - ../artifacts/hosts/MAIN_ORG/cli_hosts:/etc/hosts
+#      - ../artifacts/crypto-config/ordererOrganizations/DOMAIN/orderers/orderer.DOMAIN/tls:/etc/hyperledger/crypto/orderer/tls
+    CLI_EXTRA_HOSTS
+
+  # simple http server to disseminate certificates
+  www.DOMAIN:
+    extends:
+      file: base-intercept.yaml
+      service: www-base
+    container_name: www.DOMAIN
+    ports:
+      - WWW_PORT:80
+      
+#  zookeeper.DOMAIN:
+#    container_name: zookeeper.DOMAIN
+#    image: hyperledger/fabric-zookeeper:THIRDPARTY_VERSION
+#    environment:
+#      ZOOKEEPER_CLIENT_PORT: 32181
+#      ZOOKEEPER_TICK_TIME: 2000
+#
+#  kafka.DOMAIN:
+#    container_name: kafka.DOMAIN
+#    image: hyperledger/fabric-kafka:THIRDPARTY_VERSION
+#    depends_on:
+#    - zookeeper.example.com
+#    environment:
+#      - KAFKA_BROKER_ID=1
+#      - KAFKA_ZOOKEEPER_CONNECT=zookeeper.DOMAIN:2181
+#      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka.DOMAIN:9092
+#      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+#      - KAFKA_MESSAGE_MAX_BYTES=1048576 # 1 * 1024 * 1024 B
+#      - KAFKA_REPLICA_FETCH_MAX_BYTES=1048576 # 1 * 1024 * 1024 B
+#      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+#      - KAFKA_LOG_RETENTION_MS=-1
+#      - KAFKA_MIN_INSYNC_REPLICAS=1
+#      - KAFKA_DEFAULT_REPLICATION_FACTOR=1
+

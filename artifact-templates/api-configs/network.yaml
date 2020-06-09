@@ -1,0 +1,338 @@
+name: "basic"
+#
+# Schema version of the content. Used by the SDK to apply the corresponding parsing rules.
+#
+version: 1.0.0
+
+#
+# The client section used by GO SDK.
+#
+client:
+
+  # Which organization does this application instance belong to? The value must be the name of an org
+  # defined under "organizations"
+  organization: ORG
+
+  logging:
+    level: info
+
+  # Root of the MSP directories with keys and certs.
+  cryptoconfig:
+    path: ./crypto-config
+
+  # Some SDKs support pluggable KV stores, the properties under "credentialStore"
+  # are implementation specific
+  credentialStore:
+    path: /tmp/fabric-api-store
+
+    # [Optional]. Specific to the CryptoSuite implementation used by GO SDK. Software-based implementations
+    # requiring a key store. PKCS#11 based implementations does not.
+    cryptoStore:
+      path: /tmp/fabric-api-msp
+
+    # BCCSP config for the client. Used by GO SDK.
+  BCCSP:
+    security:
+      enabled: true
+      default:
+        provider: "SW"
+      hashAlgorithm: "SHA2"
+      softVerify: true
+      level: 256
+
+  tlsCerts:
+    # [Optional]. Use system certificate pool when connecting to peers, orderers (for negotiating TLS) Default: false
+    systemCertPool: false
+
+    # [Optional]. Client key and cert for TLS handshake with peers and orderers
+    client:
+      keyfile:
+      certfile:
+
+#
+# list of participating organizations in this network
+#
+organizations:
+  a:
+    mspid: aMSP
+    cryptoPath: peerOrganizations/a.DOMAIN/users/{userName}@a.DOMAIN/msp
+    peers:
+      - peer0.a.DOMAIN
+      - peer1.a.DOMAIN
+
+    # [Optional]. Certificate Authorities issue certificates for identification purposes in a Fabric based
+    # network. Typically certificates provisioning is done in a separate process outside of the
+    # runtime network. Fabric-CA is a special certificate authority that provides a REST APIs for
+    # dynamic certificate management (enroll, revoke, re-enroll). The following section is only for
+    # Fabric-CA servers.
+    certificateAuthorities:
+      - ca.a.DOMAIN
+
+  b:
+    mspid: bMSP
+    cryptoPath: peerOrganizations/b.DOMAIN/users/{userName}@b.DOMAIN/msp
+    peers:
+      - peer0.b.DOMAIN
+      - peer1.b.DOMAIN
+
+    certificateAuthorities:
+      - ca.b.DOMAIN
+
+  c:
+    mspid: cMSP
+    cryptoPath: peerOrganizations/c.DOMAIN/users/{userName}@c.DOMAIN/msp
+    peers:
+      - peer0.c.DOMAIN
+      - peer1.c.DOMAIN
+
+    certificateAuthorities:
+      - ca.c.DOMAIN
+
+
+#
+# List of orderers to send transaction and channel create/update requests to. For the time
+# being only one orderer is needed. If more than one is defined, which one get used by the
+# SDK is implementation specific. Consult each SDK's documentation for its handling of orderers.
+#
+orderers:
+  orderer.DOMAIN:
+    url: orderer.DOMAIN:7050
+
+    # these are standard properties defined by the gRPC library
+    # they will be passed in as-is to gRPC client constructor
+    grpcOptions:
+      ssl-target-name-override: orderer.DOMAIN
+      # These parameters should be set in coordination with the keepalive policy on the server,
+      # as incompatible settings can result in closing of connection.
+      # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      path: ./crypto-config/ordererOrganizations/DOMAIN/tlsca/tlsca.DOMAIN-cert.pem
+#
+# List of peers to send various requests to, including endorsement, query
+# and event listener registration.
+#
+peers:
+  peer0.a.DOMAIN:
+    # this URL is used to send endorsement and query requests
+    url: peer0.a.DOMAIN:7051
+    # eventUrl is only needed when using eventhub (default is delivery service)
+    eventUrl: peer0.a.DOMAIN:7053
+
+    grpcOptions:
+      ssl-target-name-override: peer0.a.DOMAIN
+      # These parameters should be set in coordination with the keepalive policy on the server,
+      # as incompatible settings can result in closing of connection.
+      # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      path: ./crypto-config/peerOrganizations/a.DOMAIN/tlsca/tlsca.a.DOMAIN-cert.pem
+
+  peer1.a.DOMAIN:
+    # this URL is used to send endorsement and query requests
+    url: peer1.a.DOMAIN:7051
+    # eventUrl is only needed when using eventhub (default is delivery service)
+    eventUrl: peer1.a.DOMAIN:7053
+
+    grpcOptions:
+      ssl-target-name-override: peer1.a.DOMAIN
+      # These parameters should be set in coordination with the keepalive policy on the server,
+      # as incompatible settings can result in closing of connection.
+      # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      path: ./crypto-config/peerOrganizations/a.DOMAIN/tlsca/tlsca.a.DOMAIN-cert.pem
+
+  peer0.b.DOMAIN:
+    # this URL is used to send endorsement and query requests
+    url: peer0.b.DOMAIN:7051
+    # eventUrl is only needed when using eventhub (default is delivery service)
+    eventUrl: peer0.b.DOMAIN:7053
+
+    grpcOptions:
+      ssl-target-name-override: peer0.b.DOMAIN
+      # These parameters should be set in coordination with the keepalive policy on the server,
+      # as incompatible settings can result in closing of connection.
+      # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      path: ./crypto-config/peerOrganizations/b.DOMAIN/tlsca/tlsca.b.DOMAIN-cert.pem
+
+  peer1.b.DOMAIN:
+    # this URL is used to send endorsement and query requests
+    url: peer1.b.DOMAIN:7051
+    # eventUrl is only needed when using eventhub (default is delivery service)
+    eventUrl: peer1.b.DOMAIN:7053
+
+    grpcOptions:
+      ssl-target-name-override: peer1.b.DOMAIN
+      # These parameters should be set in coordination with the keepalive policy on the server,
+      # as incompatible settings can result in closing of connection.
+      # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      path: ./crypto-config/peerOrganizations/b.DOMAIN/tlsca/tlsca.b.DOMAIN-cert.pem
+
+  peer0.c.DOMAIN:
+    # this URL is used to send endorsement and query requests
+    url: peer0.c.DOMAIN:7051
+    # eventUrl is only needed when using eventhub (default is delivery service)
+    eventUrl: peer0.c.DOMAIN:7053
+
+    grpcOptions:
+      ssl-target-name-override: peer0.c.DOMAIN
+      # These parameters should be set in coordination with the keepalive policy on the server,
+      # as incompatible settings can result in closing of connection.
+      # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      path: ./crypto-config/peerOrganizations/c.DOMAIN/tlsca/tlsca.c.DOMAIN-cert.pem
+
+  peer1.c.DOMAIN:
+    # this URL is used to send endorsement and query requests
+    url: peer1.c.DOMAIN:7051
+    # eventUrl is only needed when using eventhub (default is delivery service)
+    eventUrl: peer1.c.DOMAIN:7053
+
+    grpcOptions:
+      ssl-target-name-override: peer1.c.DOMAIN
+      # These parameters should be set in coordination with the keepalive policy on the server,
+      # as incompatible settings can result in closing of connection.
+      # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      path: ./crypto-config/peerOrganizations/c.DOMAIN/tlsca/tlsca.c.DOMAIN-cert.pem
+
+
+#
+# Fabric-CA is a special kind of Certificate Authority provided by Hyperledger Fabric which allows
+# certificate management to be done via REST APIs. Application may choose to use a standard
+# Certificate Authority instead of Fabric-CA, in which case this section would not be specified.
+#
+certificateAuthorities:
+
+entityMatchers:
+  peer:
+    - pattern: (\w*)peer0.a.DOMAIN(\w*)
+      urlSubstitutionExp: peer0.a.DOMAIN:7051
+      eventUrlSubstitutionExp: peer0.a.DOMAIN:7053
+      sslTargetOverrideUrlSubstitutionExp: peer0.a.DOMAIN
+      mappedHost: peer0.a.DOMAIN
+    - pattern: (\w*)peer1.a.DOMAIN(\w*)
+      urlSubstitutionExp: peer1.a.DOMAIN:7051
+      eventUrlSubstitutionExp: peer1.a.DOMAIN:7053
+      sslTargetOverrideUrlSubstitutionExp: peer1.a.DOMAIN
+      mappedHost: peer1.a.DOMAIN
+    - pattern: (\w*)peer0.b.DOMAIN(\w*)
+      urlSubstitutionExp: peer0.b.DOMAIN:7051
+      eventUrlSubstitutionExp: peer0.b.DOMAIN:7053
+      sslTargetOverrideUrlSubstitutionExp: peer0.b.DOMAIN
+      mappedHost: peer0.b.DOMAIN
+    - pattern: (\w*)peer1.b.DOMAIN(\w*)
+      urlSubstitutionExp: peer1.b.DOMAIN:7051
+      eventUrlSubstitutionExp: peer1.b.DOMAIN:7053
+      sslTargetOverrideUrlSubstitutionExp: peer1.b.DOMAIN
+      mappedHost: peer1.b.DOMAIN
+    - pattern: (\w*)peer0.c.DOMAIN(\w*)
+      urlSubstitutionExp: peer0.c.DOMAIN:7051
+      eventUrlSubstitutionExp: peer0.c.DOMAIN:7053
+      sslTargetOverrideUrlSubstitutionExp: peer0.c.DOMAIN
+      mappedHost: peer0.c.DOMAIN
+    - pattern: (\w*)peer1.c.DOMAIN(\w*)
+      urlSubstitutionExp: peer1.c.DOMAIN:7051
+      eventUrlSubstitutionExp: peer1.c.DOMAIN:7053
+      sslTargetOverrideUrlSubstitutionExp: peer1.c.DOMAIN
+      mappedHost: peer1.c.DOMAIN
+
+  orderer:
+    - pattern: (\w*)orderer.DOMAIN(\w*)
+      urlSubstitutionExp: orderer.DOMAIN:7050
+      sslTargetOverrideUrlSubstitutionExp: orderer.DOMAIN
+      mappedHost: orderer.DOMAIN
+
+  certificateAuthorities:
+    - pattern: (\w*)ca.a.DOMAIN(\w*)
+      urlSubstitutionExp: http://ca.a.DOMAIN:7054
+      mappedHost: ca.a.DOMAIN
+    - pattern: (\w*)ca.b.DOMAIN(\w*)
+      urlSubstitutionExp: http://ca.b.DOMAIN:7054
+      mappedHost: ca.b.DOMAIN
+    - pattern: (\w*)ca.c.DOMAIN(\w*)
+      urlSubstitutionExp: http://ca.c.DOMAIN:7054
+      mappedHost: ca.c.DOMAIN
+
+
+
+channels:
+  common:
+    peers:
+      peer0.a.DOMAIN:
+      peer1.a.DOMAIN:
+      peer0.b.DOMAIN:
+      peer1.b.DOMAIN:
+      peer0.c.DOMAIN:
+      peer1.c.DOMAIN:
+
+  a-b:
+    peers:
+      peer0.a.DOMAIN:
+      peer1.a.DOMAIN:
+      peer0.b.DOMAIN:
+      peer1.b.DOMAIN:
+
+  a-c:
+    peers:
+      peer0.a.DOMAIN:
+      peer1.a.DOMAIN:
+      peer0.c.DOMAIN:
+      peer1.c.DOMAIN:
+

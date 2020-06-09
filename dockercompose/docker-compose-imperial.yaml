@@ -1,0 +1,130 @@
+#
+# Copyright Altoros. All Rights Reserved.
+#
+
+version: '2'
+
+volumes:
+  peer0.imperial.158.39.48.220:
+  peer1.imperial.158.39.48.220:
+
+services:
+
+  ca.imperial.158.39.48.220:
+    container_name: ca.imperial.158.39.48.220
+    image: hyperledger/fabric-ca:1.4.4
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.imperial.158.39.48.220-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/32dbb397ab129edfdbe1e4a4e6860e8c2b7336f2b01f5ea5d033ead2815a0376_sk
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.imperial.158.39.48.220-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/32dbb397ab129edfdbe1e4a4e6860e8c2b7336f2b01f5ea5d033ead2815a0376_sk
+#    ports:
+#      - 8054:7054
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ../artifacts/crypto-config/peerOrganizations/imperial.158.39.48.220/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ../artifacts/fabric-ca-server-config-imperial.yaml:/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
+
+  peer0.imperial.158.39.48.220:
+    container_name: peer0.imperial.158.39.48.220
+    extends:
+      file: base-intercept.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.imperial.158.39.48.220
+      - CORE_PEER_LOCALMSPID=imperialMSP
+      - CORE_PEER_ADDRESS=peer0.imperial.158.39.48.220:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.imperial.158.39.48.220:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.imperial.158.39.48.220:7051
+    ports:
+      - 8051:7051
+      - 8053:7053
+    volumes:
+        - ../artifacts/crypto-config/peerOrganizations/imperial.158.39.48.220/peers/peer0.imperial.158.39.48.220/:/etc/hyperledger/crypto/peer
+        - peer0.imperial.158.39.48.220:/var/hyperledger/production
+    depends_on:
+      - ca.imperial.158.39.48.220
+    
+
+  peer1.imperial.158.39.48.220:
+    container_name: peer1.imperial.158.39.48.220
+    extends:
+      file: base-intercept.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.imperial.158.39.48.220
+      - CORE_PEER_LOCALMSPID=imperialMSP
+      - CORE_PEER_ADDRESS=peer1.imperial.158.39.48.220:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.imperial.158.39.48.220:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.imperial.158.39.48.220:7051
+    ports:
+      - 8056:7051
+      - 8058:7053
+    volumes:
+        - ../artifacts/crypto-config/peerOrganizations/imperial.158.39.48.220/peers/peer1.imperial.158.39.48.220/:/etc/hyperledger/crypto/peer
+        - peer1.imperial.158.39.48.220:/var/hyperledger/production
+    depends_on:
+      - ca.imperial.158.39.48.220
+    
+
+  # fabric-rest api server
+  api.imperial.158.39.48.220:
+    extends:
+      file: base-intercept.yaml
+      service: api-base
+    container_name: api.imperial.158.39.48.220
+    ports:
+      - 8082:4000
+    environment:
+      - ORG=imperial
+      - PORT=4000
+ #   volumes:
+ #     - ../artifacts/hosts/imperial/api_hosts:/etc/hosts
+    depends_on:
+      - peer0.imperial.158.39.48.220
+      - peer1.imperial.158.39.48.220
+    
+
+  cli.158.39.48.220:
+    container_name: cli.158.39.48.220
+    extends:
+      file: base-intercept.yaml
+      service: cli-base
+    volumes:
+      - ../artifacts/crypto-config/ordererOrganizations/158.39.48.220/orderers/orderer.158.39.48.220/tls:/etc/hyperledger/crypto/orderer/tls
+
+  cli.imperial.158.39.48.220:
+    container_name: cli.imperial.158.39.48.220
+    extends:
+      service: cli.158.39.48.220
+    environment:
+      - CORE_PEER_LOCALMSPID=imperialMSP
+    volumes:
+    #    - ../artifacts/hosts/imperial/cli_hosts:/etc/hosts
+        - ../artifacts/crypto-config/peerOrganizations/imperial.158.39.48.220/users/Admin@imperial.158.39.48.220:/etc/hyperledger/crypto/peer
+    
+
+  cliNoCryptoVolume.imperial.158.39.48.220:
+    container_name: cliNoCryptoVolume.imperial.158.39.48.220
+    extends:
+      file: base-intercept.yaml
+      service: cli-base
+    environment:
+      - CORE_PEER_LOCALMSPID=imperialMSP
+    volumes:
+        - ../artifacts/hosts/imperial/cli_hosts:/etc/hosts
+
+  www.imperial.158.39.48.220:
+    extends:
+      file: base-intercept.yaml
+      service: www-base
+    container_name: www.imperial.158.39.48.220
+    ports:
+      - 4001:80
+    volumes:
+      - ../www:/usr/share/nginx/html:ro
+      - ../artifacts/nginx-imperial.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api.imperial.158.39.48.220
