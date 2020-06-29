@@ -37,7 +37,15 @@
     <label for="author">Username</label>
   </div>
 
-<input type="password" name="password" id="password" maxlength="12"> Password<label for="password"></label>
+
+
+  <div class="form-group">
+    <div class="input-field col s12 invalid"></div>
+    <label for="password">Password </label>
+    <input type="password" id="password" name="password"
+           required>
+</div>
+
 
 
 </div>
@@ -45,7 +53,7 @@
   <div class="input-field col s12 invalid">
     <textarea id="project" name="project"
       class="materialize-textarea" ></textarea>
-    <label for="project">Project</label>
+    <label for="project">Project name</label>
   </div>
 
 
@@ -148,8 +156,8 @@
 <div style="height: 200px"></div>
 <div id="results"></div>  
 
-
 <!-- Uploader to Minio -->
 <input type="file" id="file-chooser" />
-<button type="button" onclick="uploader()" id="upload-button">Upload</button>
-<script src="pages/scripts/bundle.js"></script>
+<button type="button" onclick="uploader();bucketcreate()" id="upload-button">Upload</button>
+<script src="pages/scripts/bucketcreate.js"></script>
+<script src="pages/scripts/uploadfile.js"></script>

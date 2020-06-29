@@ -75390,33 +75390,27 @@ var Minio = require('minio')
 // Instantiate the minio client with the endpoint
 // and access keys as shown below.
 
-var minioClient = new Minio.Client({
-    endPoint: '158.39.77.36',
-    port: 80,
-    useSSL: false,
-    accessKey: 'tester',
-    secretKey: 'tester123'
-});
+
+//alert(minioClient.accessKey);
+//alert(minioClient.secretKey);
 
 
-
+//Export the function
 module.exports = uploader;
 
-function bucketcreate() {
-// Make a bucket.
-minioClient.makeBucket('testbucket', 'us-east-1', function(err) {
-    if (err) return console.log(err)
-
-    console.log('Bucket created successfully in "us-east-1".')
-
-    var metaData = {
-        'Content-Type': 'application/octet-stream',
-        'X-Amz-Meta-Testing': 1234,
-        'example': 5678
-    }
-});
-}   
+//Function to upload a file
 function uploader() {
+    var user = document.getElementById('author').value;
+    var pass = document.getElementById('password').value;
+    var project = document.getElementById('project').value
+    
+    var minioClient = new Minio.Client({
+        endPoint: '158.39.77.36',
+        port: 80,
+        useSSL: false,
+        accessKey: user,
+        secretKey: pass
+    });
     //window.onload=function(){
     var fileChooser = document.getElementById('file-chooser');                                                                                                                                                                                                              
     var button = document.getElementById('upload-button');                                                                                                                                                                                                                  
@@ -75429,20 +75423,20 @@ function uploader() {
             results.innerHTML = '';                                                                                                                                                                                                                                         
             // Object key will be facebook-USERID#/FILE_NAME?                                                                                                                                                                                                                
             // var objKey = 'myobjects' + '/' + file.name;          
-            var objKey = file.name+"hello";                                                                                                                                                                                                              
+            var objKey = project+file.name;                                                                                                                                                                                                              
             var params = {                                                                                                                                                                                                                                                  
-                Bucket: 'testbucket',                                                                                                                                                                                                                                       
+                Bucket: project,                                                                                                                                                                                                                                       
                 Key: objKey,                                                                                                                                                                                                                                                
                 ContentType: file.type,                                                                                                                                                                                                                                     
                 Body: file,                                                                                                                                                                                                                                                 
             };                                                                                                                                                                                                                                                              
                                                                                                                                                                                                                                                                             
             reader.onloadend = function () {                                                                                                                                                                                                                                
-                minioClient.putObject('testbucket', objKey, reader.result, file.type, function(e) {                                                                                                                                                                                  
+                minioClient.putObject(project, objKey, reader.result, file.type, function(e) {                                                                                                                                                                                  
                     if (e) {                                                                                                                                                                                                                                                
                         results.innerHTML = 'ERROR: ' + e;                                                                                                                                                                                                                  
                     } else {                                                                                                                                                                                                                                                
-                        minioClient.statObject('testbucket', objKey, function(e, stat) {                                                                                                                                                                                             
+                        minioClient.statObject(project, objKey, function(e, stat) {                                                                                                                                                                                             
                             if (e) {                                                                                                                                                                                                                                        
                                 results.innerHTML = 'ERROR: ' + e;                                                                                                                                                                                                          
                             } else {                                                                                                                                                                                                                                        
