@@ -24,7 +24,7 @@ artifactsTemplatesFolder="artifact-templates"
 : ${IP2:="158.39.75.229"}
 : ${IP3:="158.37.63.8"}
 
-: ${FABRIC_VERSION:="1.4.4"}
+: ${FABRIC_VERSION:="1.4.0"}
 : ${THIRDPARTY_VERSION:="0.4.14"}
 : ${FABRIC_REST_VERSION:="0.13.0"}
 
