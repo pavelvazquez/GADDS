@@ -19,10 +19,21 @@ type SmartContract struct {
 }
 
 // Define the databasestructure.
-type Cad struct {
-	Owner         string `json:"owner"`
-	Creation_Date string `json:"creationdate"`
-	Project_name  string `json:"projectname"`
+type Meta struct {
+	Contributor string `json:"contributor"`
+	Coverage    string `json:"coverage"`
+	Creator     string `json:"creator"`
+	Date        string `json:"date"`
+	Description string `json:"description"`
+	Format      string `json:"format"`
+	//Identifier  string `json:"identifier"`
+	Language  string `json:"language"`
+	Publisher string `json:"publisher"`
+	Relation  string `json:"relation"`
+	Rights    string `json:"rights"`
+	Source    string `json:"source"`
+	Title     string `json:"title"`
+	Type      string `json:"type"`
 }
 
 /*
@@ -42,69 +53,65 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 	// Retrieve the requested Smart Contract function and arguments
 	function, args := APIstub.GetFunctionAndParameters()
 	// Route to the appropriate handler function to interact with the ledger appropriately
-	if function == "queryCad" {
-		return s.queryCad(APIstub, args)
+	if function == "query" {
+		return s.query(APIstub, args)
 	} else if function == "initLedger" {
 		return s.initLedger(APIstub)
 	} else if function == "create" {
-		return s.createCad(APIstub, args)
+		return s.create(APIstub, args)
 	} else if function == "queryAll" {
-		return s.queryAllCads(APIstub)
-	} else if function == "changeOwner" {
-		return s.changeCadOwner(APIstub, args)
+		return s.queryAll(APIstub)
 	}
 
 	return shim.Error("Invalid Smart Contract function name.")
 }
 
-func (s *SmartContract) queryCad(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+func (s *SmartContract) query(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 
-	cadAsBytes, _ := APIstub.GetState(args[0])
-	return shim.Success(cadAsBytes)
+	metaAsBytes, _ := APIstub.GetState(args[0])
+	return shim.Success(metaAsBytes)
 }
 
-/*
- * The creation of a first entry through the interface with the proper type and usign the chaincode interface
- */
+//The chaincode need to be initialize with a random entry but it must be complete
 func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Response {
-	cads := []Cad{
-		Cad{Owner: "Neil", Creation_Date: "06/06/19", Project_name: "Test"},
+	metas := []Meta{
+		Meta{Contributor: "Pavel", Coverage: "EU", Creator: "Pavel", Date: "01/01/20", Description: "Test", Format: "none", Language: "EN", Publisher: "Pavel", Relation: "none", Rights: "none", Source: "none", Title: "Test", Type: "none"},
 	}
 
 	i := 0
-	for i < len(cads) {
+	for i < len(metas) {
 		fmt.Println("i is ", i)
-		cadAsBytes, _ := json.Marshal(cads[i])
-		APIstub.PutState("CAD"+strconv.Itoa(i), cadAsBytes)
-		fmt.Println("Added", cads[i])
+		metaAsBytes, _ := json.Marshal(metas[i])
+		APIstub.PutState("META"+strconv.Itoa(i), metaAsBytes)
+		fmt.Println("Added", metas[i])
 		i = i + 1
 	}
 
 	return shim.Success(nil)
 }
 
-func (s *SmartContract) createCad(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+func (s *SmartContract) create(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting 4")
+	if len(args) != 14 {
+		return shim.Error("Incorrect number of arguments. Expecting 14")
 	}
 
-	var cad = Cad{Owner: args[1], Creation_Date: args[2], Project_name: args[3]}
+	var meta = Meta{Contributor: args[1], Coverage: args[2], Creator: args[3], Date: args[4], Description: args[5], Format: args[6], Language: args[7], Publisher: args[8], Relation: args[9], Rights: args[10], Source: args[11], Title: args[12], Type: args[13]}
 
-	cadAsBytes, _ := json.Marshal(cad)
-	APIstub.PutState(args[0], cadAsBytes)
+	metaAsBytes, _ := json.Marshal(meta)
+	APIstub.PutState(args[0], metaAsBytes)
 
 	return shim.Success(nil)
 }
 
-func (s *SmartContract) queryAllCads(APIstub shim.ChaincodeStubInterface) sc.Response {
+func (s *SmartContract) queryAll(APIstub shim.ChaincodeStubInterface) sc.Response {
 
-	startKey := "CAD0"
-	endKey := "CAD999"
+	startKey := "META0"
+	endKey := "META999"
 
 	resultsIterator, err := APIstub.GetStateByRange(startKey, endKey)
 	if err != nil {
@@ -139,27 +146,9 @@ func (s *SmartContract) queryAllCads(APIstub shim.ChaincodeStubInterface) sc.Res
 	}
 	buffer.WriteString("]")
 
-	fmt.Printf("- queryAllCads:\n%s\n", buffer.String())
+	fmt.Printf("- queryAll:\n%s\n", buffer.String())
 
 	return shim.Success(buffer.Bytes())
-}
-
-func (s *SmartContract) changeCadOwner(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
-	}
-
-	cadAsBytes, _ := APIstub.GetState(args[0])
-	cad := Cad{}
-
-	json.Unmarshal(cadAsBytes, &cad)
-	cad.Owner = args[1]
-
-	cadAsBytes, _ = json.Marshal(cad)
-	APIstub.PutState(args[0], cadAsBytes)
-
-	return shim.Success(nil)
 }
 
 // The main function is only relevant in unit test mode. Only included here for completeness.

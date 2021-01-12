@@ -29,6 +29,7 @@
     </div>
   </div>
 
+<!--Collection of MinIO variables-->
 </div>
 <div class="form-group">
   <div class="input-field col s12 invalid">
@@ -46,7 +47,9 @@
            required>
 </div>
 
+<!--End of MinIO variables-->
 
+<!--Metadata variables-->
 
 </div>
 <div class="form-group">
@@ -56,9 +59,11 @@
     <label for="project">Project name</label>
   </div>
 
+<!--End of metadata variables-->
 
 
-<button onclick="format()">Build the transaction</button>
+<!--Formater of the json string to input in hyperledger-->
+<button onclick="format()">Build the metadata</button>
 <script src="pages/scripts/formater.js"></script>
 
 <div class="form-group">
@@ -68,15 +73,15 @@
         ng-model="args"></textarea>
       <label for="ccarguments">Formated output</label>
   </div>
-    
-
-    
+     
   </div>
 
 </form>
+<!-- End of the formater -->
 
-<!-- Format the json string to input in hyperledger -->
-
+<!-- uploader to MinIO..It need to be mergews with Upload button-->
+<input type="file" id="file-chooser" />
+<button type="button" onclick="uploader();bucketcreate()" id="upload-button">Upload</button>
 
 
 
@@ -84,13 +89,13 @@
 <div ng-hide="ctl.invokeInProgress">
   <!-- query -->
   <div class="row">
-    <button class="btn btn-primary col s2" type="button" ng-click="ctl.invoke(selectedChannel, selectedCc, selectedPeers, fcn, args)" ng-disabled="form.$invalid">Invoke</button>
+    <button class="btn btn-primary col s2" type="button" ng-click="ctl.invoke(selectedChannel, selectedCc, selectedPeers, fcn, args)" ng-disabled="form.$invalid">Upload</button>
   <!--  <button class="btn btn-flat col s3" type="button" ng-click="fcn='move'; args='[&quot;a&quot;, &quot;b&quot;,&quot;10&quot;]'">Fill with sample invoke</button> -->
   </div>
   <br>
   <!-- history -->
   <div class="row">
-    <button class="btn btn-primary col s2" type="button" ng-click="ctl.query(selectedChannel, selectedCc, selectedPeers[0], fcn, args)" ng-disabled="form.$invalid">Query</button>
+    <button class="btn btn-primary col s2" type="button" ng-click="ctl.query(selectedChannel, selectedCc, selectedPeers[0], fcn, args)" ng-disabled="form.$invalid">Download</button>
   <!-- <button class="btn btn-flat col s3" type="button" ng-click="fcn='query'; args='[&quot;a&quot;]'">Fill with sample query</button> -->
   </div>
   <br>
@@ -157,7 +162,5 @@
 <div id="results"></div>  
 
 <!-- Uploader to Minio -->
-<input type="file" id="file-chooser" />
-<button type="button" onclick="uploader();bucketcreate()" id="upload-button">Upload</button>
 <script src="pages/scripts/bucketcreate.js"></script>
 <script src="pages/scripts/uploadfile.js"></script>
