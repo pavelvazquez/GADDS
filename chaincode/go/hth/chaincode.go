@@ -20,20 +20,10 @@ type SmartContract struct {
 
 // Define the databasestructure.
 type Meta struct {
-	Contributor string `json:"contributor"`
-	Coverage    string `json:"coverage"`
-	Creator     string `json:"creator"`
+	Author string `json:"author"`
 	Date        string `json:"date"`
-	Description string `json:"description"`
-	Format      string `json:"format"`
-	//Identifier  string `json:"identifier"`
-	Language  string `json:"language"`
-	Publisher string `json:"publisher"`
-	Relation  string `json:"relation"`
-	Rights    string `json:"rights"`
-	Source    string `json:"source"`
 	Title     string `json:"title"`
-	Type      string `json:"type"`
+
 }
 
 /*
@@ -79,7 +69,7 @@ func (s *SmartContract) query(APIstub shim.ChaincodeStubInterface, args []string
 //The chaincode need to be initialize with a random entry but it must be complete
 func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Response {
 	metas := []Meta{
-		Meta{Contributor: "Pavel", Coverage: "EU", Creator: "Pavel", Date: "01/01/20", Description: "Test", Format: "none", Language: "EN", Publisher: "Pavel", Relation: "none", Rights: "none", Source: "none", Title: "Test", Type: "none"},
+		Meta{Author: "Pavel", Date: "01/01/20", Title: "Test"},
 	}
 
 	i := 0
@@ -96,11 +86,11 @@ func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Respo
 
 func (s *SmartContract) create(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 14 {
-		return shim.Error("Incorrect number of arguments. Expecting 14")
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. Expecting 4")
 	}
 
-	var meta = Meta{Contributor: args[1], Coverage: args[2], Creator: args[3], Date: args[4], Description: args[5], Format: args[6], Language: args[7], Publisher: args[8], Relation: args[9], Rights: args[10], Source: args[11], Title: args[12], Type: args[13]}
+	var meta = Meta{Author: args[1], Date: args[2], Title: args[3] }
 
 	metaAsBytes, _ := json.Marshal(meta)
 	APIstub.PutState(args[0], metaAsBytes)

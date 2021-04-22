@@ -32414,15 +32414,16 @@ module.exports = bucketcreate;
 function bucketcreate() {
     var user = document.getElementById('author').value;
     var pass = document.getElementById('password').value;
-    var project = document.getElementById('project').value
+    var project = document.getElementById('title').value
     
     var minioClient = new Minio.Client({
-        endPoint: '158.39.77.36',
-        port: 80,
+        endPoint: '127.0.0.1',
+        port: 9000,
         useSSL: false,
         accessKey: user,
         secretKey: pass
     });
+    
 // Make a bucket.
     minioClient.makeBucket(project, 'us-east-1', function(err) {
     if (err) return console.log(err)

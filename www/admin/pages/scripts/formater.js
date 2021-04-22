@@ -1,7 +1,8 @@
 function format(){
 
 var author = document.getElementById('author').value;
-var project = document.getElementById('project').value; 
+var title = document.getElementById('title').value; 
+var date = document.getElementById('date').value;
 
 var today = new Date();
 var dd = String(today.getDate()).padStart(2, '0');
@@ -10,7 +11,7 @@ var yyyy = today.getFullYear();
 
 today = `${mm}/${dd}/${yyyy}`;
 
-ccarguments.value = `["${project}","${author}","${today}","Success"]`;
+ccarguments.value = `["create","${author}","${date}","${title}"]`;
 
 
 
