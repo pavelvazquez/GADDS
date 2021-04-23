@@ -14,7 +14,7 @@ function LoginController(UserService, $state) {
   ctl.signUp = function(user){
     return UserService.signUp(user)
     .then(function(){
-      $state.go('app.query');
+      $state.go('app.info');
     });
   };
 

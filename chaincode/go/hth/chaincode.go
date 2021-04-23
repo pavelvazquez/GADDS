@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strconv"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
@@ -21,9 +22,8 @@ type SmartContract struct {
 // Define the databasestructure.
 type Meta struct {
 	Author string `json:"author"`
-	Date        string `json:"date"`
-	Title     string `json:"title"`
-
+	Date   string `json:"date"`
+	Title  string `json:"title"`
 }
 
 /*
@@ -90,10 +90,15 @@ func (s *SmartContract) create(APIstub shim.ChaincodeStubInterface, args []strin
 		return shim.Error("Incorrect number of arguments. Expecting 4")
 	}
 
-	var meta = Meta{Author: args[1], Date: args[2], Title: args[3] }
-
+	var meta = Meta{Author: args[1], Date: args[2], Title: args[3]}
 	metaAsBytes, _ := json.Marshal(meta)
 	APIstub.PutState(args[0], metaAsBytes)
+
+	//Date validation
+	re := regexp.MustCompile("(0?[1-9]|[12][0-9]|3[01])/(0?[1-9]|1[012])/((19|20)\\d\\d)")
+	if re.MatchString(args[2]) == false {
+		return shim.Error("Invalid date format. dd/mm/yyyy")
+	}
 
 	return shim.Success(nil)
 }

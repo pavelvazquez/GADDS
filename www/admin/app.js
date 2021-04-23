@@ -61,13 +61,25 @@ angular.module('altrs.app',[
       }
     })
 
-    .state('app.query', {
-      url: 'query',
-      templateUrl: 'pages/query.html',
+    .state('app.upload', {
+      url: 'upload',
+      templateUrl: 'pages/upload.html',
       controller: 'QueryController',
       controllerAs: 'ctl',
       data:{
-        name: 'Query/Invoke',
+        name: 'Upload',
+        guest:false
+        // default:true
+      }
+    })
+
+    .state('app.download', {
+      url: 'download',
+      templateUrl: 'pages/download.html',
+      controller: 'QueryController',
+      controllerAs: 'ctl',
+      data:{
+        name: 'Download',
         guest:false
         // default:true
       }
