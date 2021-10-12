@@ -26,6 +26,9 @@ services:
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
+      - GODEBUG=netdns=go
+      - CORE_CHAINCODE_BUILDER=hyperledger/fabric-ccenv:1.4.0
+
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
     volumes:
@@ -43,6 +46,7 @@ services:
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
+      - GODEBUG=netdns=go
     volumes:
       - /var/run/:/host/var/run/
       - ../artifacts:/etc/hyperledger/artifacts

@@ -1,0 +1,127 @@
+
+version: '2'
+
+volumes:
+  peer0.ous.hth:
+  peer1.ous.hth:
+
+services:
+
+  ca.ous.hth:
+    container_name: ca.ous.hth
+    image: hyperledger/fabric-ca:1.4.0
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.ous.hth-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/29127f6b3cae3d8f7e3d5d6d2ad49f4a608d9f0fac722d6ef98cb16e4379488a_sk
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.ous.hth-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/29127f6b3cae3d8f7e3d5d6d2ad49f4a608d9f0fac722d6ef98cb16e4379488a_sk
+#    ports:
+#      - 8054:7054
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ../artifacts/crypto-config/peerOrganizations/ous.hth/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ../artifacts/fabric-ca-server-config-ous.yaml:/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
+
+  peer0.ous.hth:
+    container_name: peer0.ous.hth
+    extends:
+      file: base-intercept.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.ous.hth
+      - CORE_PEER_LOCALMSPID=ousMSP
+      - CORE_PEER_ADDRESS=peer0.ous.hth:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.ous.hth:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.ous.hth:7051
+    ports:
+      - 8051:7051
+      - 8053:7053
+    volumes:
+        - ../artifacts/crypto-config/peerOrganizations/ous.hth/peers/peer0.ous.hth/:/etc/hyperledger/crypto/peer
+        - peer0.ous.hth:/var/hyperledger/production
+    depends_on:
+      - ca.ous.hth
+    
+
+  peer1.ous.hth:
+    container_name: peer1.ous.hth
+    extends:
+      file: base-intercept.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.ous.hth
+      - CORE_PEER_LOCALMSPID=ousMSP
+      - CORE_PEER_ADDRESS=peer1.ous.hth:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.ous.hth:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.ous.hth:7051
+    ports:
+      - 8056:7051
+      - 8058:7053
+    volumes:
+        - ../artifacts/crypto-config/peerOrganizations/ous.hth/peers/peer1.ous.hth/:/etc/hyperledger/crypto/peer
+        - peer1.ous.hth:/var/hyperledger/production
+    depends_on:
+      - ca.ous.hth
+    
+
+  # fabric-rest api server
+  api.ous.hth:
+    extends:
+      file: base-intercept.yaml
+      service: api-base
+    container_name: api.ous.hth
+    ports:
+      - 8082:4000
+    environment:
+      - ORG=ous
+      - PORT=4000
+ #   volumes:
+ #     - ../artifacts/hosts/ous/api_hosts:/etc/hosts
+    depends_on:
+      - peer0.ous.hth
+      - peer1.ous.hth
+    
+
+  cli.hth:
+    container_name: cli.hth
+    extends:
+      file: base-intercept.yaml
+      service: cli-base
+    volumes:
+      - ../artifacts/crypto-config/ordererOrganizations/hth/orderers/orderer.hth/tls:/etc/hyperledger/crypto/orderer/tls
+
+  cli.ous.hth:
+    container_name: cli.ous.hth
+    extends:
+      service: cli.hth
+    environment:
+      - CORE_PEER_LOCALMSPID=ousMSP
+    volumes:
+    #    - ../artifacts/hosts/ous/cli_hosts:/etc/hosts
+        - ../artifacts/crypto-config/peerOrganizations/ous.hth/users/Admin@ous.hth:/etc/hyperledger/crypto/peer
+    
+
+  cliNoCryptoVolume.ous.hth:
+    container_name: cliNoCryptoVolume.ous.hth
+    extends:
+      file: base-intercept.yaml
+      service: cli-base
+    environment:
+      - CORE_PEER_LOCALMSPID=ousMSP
+    volumes:
+        - ../artifacts/hosts/ous/cli_hosts:/etc/hosts
+
+  www.ous.hth:
+    extends:
+      file: base-intercept.yaml
+      service: www-base
+    container_name: www.ous.hth
+    ports:
+      - 4001:80
+    volumes:
+      - ../www:/usr/share/nginx/html:ro
+      - ../artifacts/nginx-ous.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api.ous.hth

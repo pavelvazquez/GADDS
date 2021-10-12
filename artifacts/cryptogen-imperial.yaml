@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 PeerOrgs:
   - Name: imperial
-    Domain: imperial.158.39.48.220
+    Domain: imperial.hth
 
     # ---------------------------------------------------------------------------
     # "CA"
@@ -41,7 +41,7 @@ PeerOrgs:
     # ---------------------------------------------------------------------------
     # Specs:
     #   - Hostname: foo # implicitly "foo.org1.example.com"
-    #     CommonName: foo27.org5.158.39.48.220 # overrides Hostname-based FQDN set above
+    #     CommonName: foo27.org5.hth # overrides Hostname-based FQDN set above
     #     SANS:
     #       - "bar.{{.Domain}}"
     #       - "altfoo.{{.Domain}}"

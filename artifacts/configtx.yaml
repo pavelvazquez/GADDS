@@ -22,7 +22,7 @@ Organizations:
         ID: OrdererMSP
 
         # MSPDir is the filesystem path which contains the MSP configuration
-        MSPDir: crypto-config/ordererOrganizations/158.39.48.220/msp
+        MSPDir: crypto-config/ordererOrganizations/hth/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -38,42 +38,19 @@ Organizations:
                 Type: Signature
                 Rule: "OR('OrdererMSP.admin')"
 
-    - &glasgow
+    - &imperial
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: glasgowMSP
+        Name: imperialMSP
 
         # ID to load the MSP definition as
-        ID: glasgowMSP
+        ID: imperialMSP
 
-        MSPDir: crypto-config/peerOrganizations/glasgow.158.39.48.220/msp
+        MSPDir: crypto-config/peerOrganizations/imperial.hth/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
         #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
-        Policies:
-            Readers:
-                Type: Signature
-                Rule: "OR('glasgowMSP.member')"
-            Writers:
-                Type: Signature
-                Rule: "OR('glasgowMSP.member')"
-            Admins:
-                Type: Signature
-                Rule: "OR('glasgowMSP.admin')"
-
-        # leave this flag set to true.
-        AnchorPeers:
-            # AnchorPeers defines the location of peers which can be used
-            # for cross org gossip communication.  Note, this value is only
-            # encoded in the genesis block in the Application section context
-            - Host: peer0.glasgow.158.39.48.220
-              Port: 7051
-
-    - &imperial
-        Name: imperialMSP
-        ID: imperialMSP
-        MSPDir: crypto-config/peerOrganizations/imperial.158.39.48.220/msp
         Policies:
             Readers:
                 Type: Signature
@@ -84,14 +61,37 @@ Organizations:
             Admins:
                 Type: Signature
                 Rule: "OR('imperialMSP.admin')"
+
+        # leave this flag set to true.
         AnchorPeers:
-            - Host: peer0.imperial.158.39.48.220
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.imperial.hth
+              Port: 7051
+
+    - &ous
+        Name: ousMSP
+        ID: ousMSP
+        MSPDir: crypto-config/peerOrganizations/ous.hth/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('ousMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('ousMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('ousMSP.admin')"
+        AnchorPeers:
+            - Host: peer0.ous.hth
               Port: 7051
 
     - &uio
         Name: uioMSP
         ID: uioMSP
-        MSPDir: crypto-config/peerOrganizations/uio.158.39.48.220/msp
+        MSPDir: crypto-config/peerOrganizations/uio.hth/msp
         Policies:
             Readers:
                 Type: Signature
@@ -103,7 +103,7 @@ Organizations:
                 Type: Signature
                 Rule: "OR('uioMSP.admin')"
         AnchorPeers:
-            - Host: peer0.uio.158.39.48.220
+            - Host: peer0.uio.hth
               Port: 7051
 
 
@@ -212,7 +212,7 @@ Orderer: &OrdererDefaults
     OrdererType: solo
 
     Addresses:
-        - orderer.158.39.48.220:7050
+        - orderer.hth:7050
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
@@ -315,44 +315,44 @@ Profiles:
         Consortiums:
             SampleConsortium:
                 Organizations:
-                    - *glasgow
                     - *imperial
+                    - *ous
                     - *uio
     common:
         Consortium: SampleConsortium
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *glasgow
                 - *imperial
+                - *ous
                 - *uio
             Capabilities:
                 <<: *ApplicationCapabilities
 
+    ous-uio:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *ous
+                - *uio
+            Capabilities:
+                <<: *ApplicationCapabilities
+    imperial-ous:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *imperial
+                - *ous
+            Capabilities:
+                <<: *ApplicationCapabilities
     imperial-uio:
         Consortium: SampleConsortium
         Application:
             <<: *ApplicationDefaults
             Organizations:
                 - *imperial
-                - *uio
-            Capabilities:
-                <<: *ApplicationCapabilities
-    glasgow-imperial:
-        Consortium: SampleConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *glasgow
-                - *imperial
-            Capabilities:
-                <<: *ApplicationCapabilities
-    glasgow-uio:
-        Consortium: SampleConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *glasgow
                 - *uio
             Capabilities:
                 <<: *ApplicationCapabilities

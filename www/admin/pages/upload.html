@@ -1,6 +1,6 @@
 
 <h2>Upload</h2>
-
+<h3>Blockchain variables</h3>
 <form name="form" novalidate>
 
   <div class="form-group">
@@ -26,18 +26,22 @@
   <div class="form-group">
     <label for="fcn" class="col-sm-2 control-label">Function name</label>
     <div class="col-sm-10">
-      <input type="text" defaultValue="create" class="form-control" id="fcn" placeholder="Function name" ng-model="fcn" required>
+      <select id="fcn" class="cbx" (change)="ChangingValue($event)" [value]='create' tabindex="50" ng-model="fcn" material-select watch required>
+        <option value="create">create</option>
+        <option value="modify">modify</option>
+      </select>
+     <!-- <input type="text" value="create" class="form-control" id="fcn" placeholder="Function name" ng-model="fcn" required> -->
     </div>
   </div>
 
-
+<h3>Identification</h3>
 <!--Collection of MinIO variables-->
 </div>
 <div class="form-group">
   <div class="input-field col s12 invalid">
-    <textarea id="author" name="author"
+    <textarea id="username" name="username"
       class="materialize-textarea" ></textarea>
-    <label for="author">Author/Username</label>
+    <label for="username">Username</label>
   </div>
 
 
@@ -50,31 +54,63 @@
 
 <!--End of MinIO variables-->
 
+
+<h3>Metadata entries</h3>
+
 <!--Metadata variables-->
+    Creator: <input type="text" id="creator" />
+    Contributor: <input type="text" id="contributor" />
+    Publisher: <input type="text" id="publisher" />
+    Title: <input type="text" id="title" />
+    Date: <input type="text" id="date" />
+    Language: <input type="text" id="language" />
+    Format: <input type="text" id="formats" />
+    Subject: <input type="text" id="subject" />
+    Description: <input type="text" id="description" />
+    Relation: <input type="text" value="None" id="relation" />
+    Source: <input type="text" value="None" id="source" />
+    Type: <input type="text" id="type" />
+    Coverage: <input type="text" id="coverage" />
+    Rights: <input type="text" value="CC by 4.0" id="rights" />
 
+<h3>Group specific metadata</h3>
+    <div class="form-group">
+      <select id="roleSel" class="cbx" tabindex="50" name="role" [value]="10" ngModel material-select watch required>
+        <option value="manu">Manufacture</option>
+        <option value="mesu">Mesurements</option>
+      </select>
+   </div>
+<div id="manu" hidden>
+    
+    Cell Type: <input type="text" id="cell" />
+    ECM Composition: <input type="text" id="ecm" />
+    Outer Hydrogel Solution: <input type="text" id="osolution" />
+    Cross Linking Solution: <input type="text" id="csolution" />
+    Nozzle Type: <input type="text" id="nozzle" />
 
-<div class="form-group">
-  <div class="input-field col s12 invalid">
-    <textarea id="title" name="title"
-      class="materialize-textarea" ></textarea>
-    <label for="title">Title</label>
-  </div>
+    <!--Formater of the json string to input in hyperledger-->
+  <button onclick="formatmanu()">Build the metadata</button>
+  
 
-  <div class="form-group">
-    <div class="input-field col s12 invalid">
-      <textarea id="date" name="date"
-        class="materialize-textarea" ></textarea>
-      <label for="date">Date</label>
-    </div>
+</div>
+<div id="mesu" hidden>
+  
+  Number of measurements: <input type="text" id="measurements" />
+  Number of images: <input type="text" id="images" />
+  Image resolution: <input type="text" id="resolution" />
+
+  <!--Formater of the json string to input in hyperledger-->
+  <button onclick="formatmesu()">Build the metadata</button>
+ 
 </div>
 
+<script src="pages/scripts/formater_measurements.js"></script>
+<script src="pages/scripts/formater_manufacture.js"></script>
 
-<!--End of metadata variables-->
 
 
-<!--Formater of the json string to input in hyperledger-->
-<button onclick="format()">Build the metadata</button>
-<script src="pages/scripts/formater.js"></script>
+
+
 
 <div class="form-group">
   <div class="input-field col s12 invalid">
@@ -182,3 +218,15 @@
 <!-- Uploader to Minio -->
 <script src="pages/scripts/bucketcreate.js"></script>
 <script src="pages/scripts/uploadfile.js"></script>
+
+<!--Function to select the group metadata and it hides-->
+<script>
+var ids=["manu", "mesu"];
+var dropDown = document.getElementById("roleSel");
+
+dropDown.onchange = function(){
+for(var x = 0; x < ids.length; x++){   document.getElementById(ids[x]).style.display="none";
+}    document.getElementById(this.value).style.display = "block";
+}
+</script>
+  

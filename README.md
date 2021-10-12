@@ -4,13 +4,30 @@ Browser-based client interface to simplify the implementation of FAIRness in the
 
 ## Getting Started
 
-This project is under development. Current version is for test porpouses only.
+This a demo version to be instatiated on single hardware. 
+
+Usage: 
+
+  start.sh -h|--help print help
+    -m - one of 'up', 'down' or 'restart'
+      - 'up' - bring up the demo platform
+      - 'down' - clear the demo platform
+      - 'restart' - restart the demo platform
+
+Example, instatiate the platform: 
+
+    ./start.sh -m up
 
 ### Prerequisites
+*Tested on Unix or Mac OS systems only
+
+-Docker Engine 19.03.13 or higher
+
+-Docker-compose 1.27.4 or higher
 
 ## Authors
 
-* **Pavel Vazquez Faci** - *Initial work* - [Personal](https://www.med.uio.no/hth/english/people/postdocs/pavelva/index.html)
+* **Pavel Vazquez Faci** - [Personal](https://www.med.uio.no/hth/english/people/postdocs/pavelva/index.html)
 
 See also the list of [contributors](CONTRIBUTORS.md) who participated in this project.
 
@@ -21,4 +38,4 @@ This project is licensed under the Apache 2.0 License- see the [LICENSE.md](LICE
 ## Acknowledgments
 
 * Project founded by the Hybrid Technology Hub - Centre for Organ on a Chip-Technology
-* This project uses source code from https://github.com/olegabu/fabric-starter, licensed under the Apache 2.0 license. 
+* This project uses modified code from https://github.com/olegabu/fabric-starter, licensed under the Apache 2.0 license. 

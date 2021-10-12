@@ -2,7 +2,7 @@
 
 starttime=$(date +%s)
 
-# defaults; export these variables before executing this script
+# defaults; 
 composeTemplatesFolder="docker-compose-templates"
 artifactsTemplatesFolder="artifact-templates"
 : ${FABRIC_STARTER_HOME:=$PWD}
@@ -12,21 +12,27 @@ artifactsTemplatesFolder="artifact-templates"
 : ${GENERATED_DOCKER_COMPOSE_FOLDER:=./dockercompose}
 #: ${FABRIC_DOCKER_VERSION=docker-ce-18.03.0.ce}
 
-: ${DOMAIN:="158.39.48.220"}
-: ${IP_ORDERER:="158.39.48.220"}
-: ${ORG1:="glasgow"}
-: ${ORG2:="imperial"}
+: ${DOMAIN:="hth"}
+: ${IP_ORDERER:="127.0.0.1"}
+: ${ORG1:="imperial"}
+: ${ORG2:="ous"}
 : ${ORG3:="uio"}
 : ${PEER0:="peer0"}
 : ${PEER1:="peer1"}
 : ${MAIN_ORG:=${ORG1}}
-: ${IP1:="158.39.75.99"}
-: ${IP2:="158.39.75.229"}
-: ${IP3:="158.37.63.8"}
+: ${IP1:="127.0.0.1"}
+: ${IP2:="127.0.0.1"}
+: ${IP3:="127.0.0.1"}
 
 : ${FABRIC_VERSION:="1.4.0"}
 : ${THIRDPARTY_VERSION:="0.4.14"}
 : ${FABRIC_REST_VERSION:="0.13.0"}
+: ${MINIO_VERSION:="RELEASE.2021-08-20T18-32-01Z"}
+
+: ${MINIO_NAME:="minio_solo"}
+: ${MINIO_FOLDER:="/data"}
+: ${MINIO_ACCESS_KEY:="MINIO_ACCESS_KEY=demouser"}
+: ${MINIO_SECRET_KEY:="MINIO_SECRET_KEY=demouser1234"}
 
 
 echo "Use Fabric-Starter home: $FABRIC_STARTER_HOME"
@@ -36,7 +42,7 @@ echo "Use target docker-compose folder: $GENERATED_DOCKER_COMPOSE_FOLDER"
 echo "Use Fabric Version: $FABRIC_VERSION"
 echo "Use Fabric REST Version: $FABRIC_REST_VERSION"
 echo "Use 3rdParty Version: $THIRDPARTY_VERSION"
-
+echo "Use MinIO Version: $MINIO_VERSION"
 
 WGET_OPTS="--verbose -N"
 CLI_TIMEOUT=10000
@@ -44,10 +50,10 @@ COMPOSE_TEMPLATE=$TEMPLATES_DOCKER_COMPOSE_FOLDER/docker-composetemplate.yaml
 COMPOSE_FILE_DEV=$TEMPLATES_DOCKER_COMPOSE_FOLDER/docker-composedev.yaml
 
 CHAINCODE_VERSION="1.0"
-CHAINCODE_COMMON_NAME=hth
-CHAINCODE_BILATERAL_NAME=relationship
+CHAINCODE_COMMON_NAME=tissue_manufacture,fibre_measurement
+CHAINCODE_BILATERAL_NAME=
 CHAINCODE_COMMON_INIT='{"Args":["initLedger"]}'
-CHAINCODE_BILATERAL_INIT='{"Args":["init","a","100","b","100"]}'
+#CHAINCODE_BILATERAL_INIT='{"Args":["init","a","100","b","100"]}'
 COLLECTION_CONFIG='$GOPATH/src/reference/collections_config.json'
 #Set default State Database
 LITERAL_COUCHDB="couchdb"
@@ -79,6 +85,17 @@ SED_OPTS="-i"
 if [ "$ARCH" == "Darwin" ]; then
     SED_OPTS="-it"
 fi
+
+function minioUp() {
+  echo "Bringing MinIO server up"
+  docker run -d -p 9000:9000 -p 9001:9001 -e $MINIO_ACCESS_KEY -e $MINIO_SECRET_KEY  --name $MINIO_NAME -v "/$(pwd)$MINIO_FOLDER":/data minio/minio:$MINIO_VERSION server $MINIO_FOLDER --console-address ":9001"
+}
+
+function minioDown() {
+  echo "Bringing MinIO server up"
+  docker stop $MINIO_NAME
+  docker rm $MINIO_NAME
+}
 
 function setDockerVersions() {
     echo "set Docker image versions for $1"
@@ -664,7 +681,7 @@ function installAll() {
 
   sleep 2
 
-  for chaincode_name in ${CHAINCODE_COMMON_NAME} ${CHAINCODE_BILATERAL_NAME}
+  for chaincode_name in ${CHAINCODE_COMMON_NAME//,/ }  ${CHAINCODE_BILATERAL_NAME}
   do
     installChaincode "${org}" "${chaincode_name}" "${CHAINCODE_VERSION}"
   done
@@ -689,8 +706,18 @@ function createJoinInstantiateWarmUp() {
 
   createChannel ${org} ${channel_name}
   joinChannel ${org} ${channel_name}
-  instantiateChaincode ${org} ${channel_name} ${chaincode_name} ${chaincode_init} ${collections}
+  #instantiateChaincode ${org} ${channel_name} ${chaincode_name} ${chaincode_init} ${collections}
 #  warmUpChaincode ${org} ${channel_name} ${chaincode_name}
+}
+
+function instaChaincode() {
+  org=${1}
+  channel_name=${2}
+  chaincode_name=${3}
+  chaincode_init=${4}
+  collections=${5}
+
+  instantiateChaincode ${org} ${channel_name} ${chaincode_name} ${chaincode_init} ${collections}
 }
 
 function makeCertDirs() {
@@ -1254,26 +1281,12 @@ fi
 # Print the usage message
 function printHelp () {
   echo "Usage: "
-  echo "  network.sh -m up|down|restart|generate"
-  echo "  network.sh -h|--help (print this message)"
-  echo "    -m <mode> - one of 'up', 'down', 'restart' or 'generate'"
-  echo "      - 'up' - bring up the network with docker-compose up"
-  echo "      - 'down' - clear the network with docker-compose down"
-  echo "      - 'restart' - restart the network"
-  echo "      - 'generate' - generate required certificates and genesis block"
-  echo "      - 'logs' - print and follow all docker instances log files"
-  echo
-  echo "    -s <state> - one of 'couchdb' or 'leveldb'"
-  echo "      - 'couchdb' - set CouchDB as State Database"
-  echo "      - 'leveldb' - set LevelDB as State Database"
+  echo "  start.sh -h|--help (print this message)"
+  echo "    -m <mode> - one of 'up', 'down' or 'restart'"
+  echo "      - 'up' - bring up the demo platform"
+  echo "      - 'down' - clear the demo platform"
+  echo "      - 'restart' - restart the demo platform"
 
-  echo "Typically, one would first generate the required certificates and "
-  echo "genesis block, then bring up the network. e.g.:"
-  echo
-  echo "	sudo network.sh -m generate"
-  echo "	network.sh -m up"
-  echo "	network.sh -m logs"
-  echo "	network.sh -m down"
 }
 
 # Parse commandline args
@@ -1325,6 +1338,7 @@ done
 checkDocker
 
 if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
+  minioUp
   for org in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3}
   do
     dockerComposeUp ${org}
@@ -1337,19 +1351,34 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 #    createJoinInstantiateWarmUp ${org} common ${CHAINCODE_COMMON_NAME} ${CHAINCODE_COMMON_INIT} ${COLLECTION_CONFIG}
   done
 
+
   createJoinInstantiateWarmUp ${ORG1} common ${CHAINCODE_COMMON_NAME} ${CHAINCODE_COMMON_INIT} #${COLLECTION_CONFIG}
-  createJoinInstantiateWarmUp ${ORG1} "${ORG1}-${ORG2}" ${CHAINCODE_BILATERAL_NAME} ${CHAINCODE_BILATERAL_INIT}
-  createJoinInstantiateWarmUp ${ORG1} "${ORG1}-${ORG3}" ${CHAINCODE_BILATERAL_NAME} ${CHAINCODE_BILATERAL_INIT}
-
   joinWarmUp ${ORG2} common ${CHAINCODE_COMMON_NAME}
-  joinWarmUp ${ORG2} "${ORG1}-${ORG2}" ${CHAINCODE_BILATERAL_NAME}
-  createJoinInstantiateWarmUp ${ORG2} "${ORG2}-${ORG3}" ${CHAINCODE_BILATERAL_NAME} ${CHAINCODE_BILATERAL_INIT}
-
   joinWarmUp ${ORG3} common ${CHAINCODE_COMMON_NAME}
-  joinWarmUp ${ORG3} "${ORG1}-${ORG3}" ${CHAINCODE_BILATERAL_NAME}
-  joinWarmUp ${ORG3} "${ORG2}-${ORG3}" ${CHAINCODE_BILATERAL_NAME}
+
+  for chaincode_name in ${CHAINCODE_COMMON_NAME//,/ } 
+  do
+    instaChaincode "${ORG1}" common "${chaincode_name}" "${CHAINCODE_COMMON_INIT}"
+  done
+
+elif [ "${MODE}" == "restart" ]; then
+  minioUp
+  for org in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3}
+  do
+    dockerComposeUp ${org}
+    sleep 2
+  done
+
+
+elif [ "${MODE}" == "minio_up" ]; then
+  minioUp
+
+elif [ "${MODE}" == "minio_down" ]; then
+  minioDown
+
 
 elif [ "${MODE}" == "down" ]; then
+  minioDown
   for org in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3}
   do
     dockerComposeDown ${org}

@@ -1,0 +1,85 @@
+
+version: '2'
+
+volumes:
+  orderer.hth:
+
+services:
+
+  orderer.hth:
+    container_name: orderer.hth
+    image: hyperledger/fabric-orderer:1.4.0
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/crypto/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/crypto/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/crypto/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/crypto/orderer/tls/ca.crt]
+      - ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s
+      - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
+      - ORDERER_KAFKA_VERBOSE=true
+    working_dir: /etc/hyperledger
+    command: orderer
+    ports:
+      - 7050:7050
+    volumes:
+        - ../artifacts/channel:/etc/hyperledger/configtx
+        - ../artifacts/crypto-config/ordererOrganizations/hth/orderers/orderer.hth/:/etc/hyperledger/crypto/orderer
+        - orderer.hth:/var/hyperledger/production/orderer
+#        - ../artifacts/crypto-config/peerOrganizations/imperial.hth/peers/peer0.imperial.hth/:/etc/hyperledger/crypto/peerimperial
+#        - ../artifacts/crypto-config/peerOrganizations/ous.hth/peers/peer0.ous.hth/:/etc/hyperledger/crypto/peerous
+#        - ../artifacts/crypto-config/peerOrganizations/uio.hth/peers/peer0.uio.hth/:/etc/hyperledger/crypto/peeruio
+
+  cli.hth:
+    container_name: cli.hth
+    extends:
+      file: base-intercept.yaml
+      service: cli-base
+#    volumes:
+#       - ../artifacts/hosts/imperial/cli_hosts:/etc/hosts
+#      - ../artifacts/crypto-config/ordererOrganizations/hth/orderers/orderer.hth/tls:/etc/hyperledger/crypto/orderer/tls
+    extra_hosts:
+      - orderer.hth:127.0.0.1
+      - www.hth:127.0.0.1
+      - www.imperial.hth:127.0.0.1
+      - www.ous.hth:127.0.0.1
+      - www.uio.hth:127.0.0.1
+
+  # simple http server to disseminate certificates
+  www.hth:
+    extends:
+      file: base-intercept.yaml
+      service: www-base
+    container_name: www.hth
+    ports:
+      - 8080:80
+      
+#  zookeeper.hth:
+#    container_name: zookeeper.hth
+#    image: hyperledger/fabric-zookeeper:0.4.14
+#    environment:
+#      ZOOKEEPER_CLIENT_PORT: 32181
+#      ZOOKEEPER_TICK_TIME: 2000
+#
+#  kafka.hth:
+#    container_name: kafka.hth
+#    image: hyperledger/fabric-kafka:0.4.14
+#    depends_on:
+#    - zookeeper.example.com
+#    environment:
+#      - KAFKA_BROKER_ID=1
+#      - KAFKA_ZOOKEEPER_CONNECT=zookeeper.hth:2181
+#      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka.hth:9092
+#      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+#      - KAFKA_MESSAGE_MAX_BYTES=1048576 # 1 * 1024 * 1024 B
+#      - KAFKA_REPLICA_FETCH_MAX_BYTES=1048576 # 1 * 1024 * 1024 B
+#      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+#      - KAFKA_LOG_RETENTION_MS=-1
+#      - KAFKA_MIN_INSYNC_REPLICAS=1
+#      - KAFKA_DEFAULT_REPLICATION_FACTOR=1
+
