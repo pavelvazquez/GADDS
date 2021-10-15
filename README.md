@@ -9,9 +9,13 @@ This a demo version to be instatiated on single hardware.
 Usage: 
 
   start.sh -h|--help print help
+
     -m - one of 'up', 'down' or 'restart'
+
       - 'up' - bring up the demo platform
+
       - 'down' - clear the demo platform
+      
       - 'restart' - restart the demo platform
 
 Example, instatiate the platform: 
