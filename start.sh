@@ -92,7 +92,7 @@ function minioUp() {
 }
 
 function minioDown() {
-  echo "Bringing MinIO server up"
+  echo "Bringing MinIO server down"
   docker stop $MINIO_NAME
   docker rm $MINIO_NAME
 }

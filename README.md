@@ -22,6 +22,10 @@ Example, instatiate the platform:
 
     ./start.sh -m up
 
+*Note that when turning down the platform, the volumes are not removed. To do so type: "docker volume prune". Warning: This will erase the blockchain ledger!
+
+
+
 ### Prerequisites
 *Tested on Unix or Mac OS systems only
 
