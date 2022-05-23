@@ -1,4 +1,4 @@
-# Global Accessible Distribution Data Sharing Platform
+# Global Accessible Distributed Data Sharing Platform
 
 Browser-based client interface to simplify the implementation of FAIRness in the data collection and storage process in life sciences.
 
