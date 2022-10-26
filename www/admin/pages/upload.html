@@ -1,4 +1,5 @@
 
+ 
 <h2>Upload</h2>
 <h3>Blockchain variables</h3>
 <form name="form" novalidate>
@@ -58,20 +59,7 @@
 <h3>Metadata entries</h3>
 
 <!--Metadata variables-->
-    Creator: <input type="text" id="creator" />
-    Contributor: <input type="text" id="contributor" />
-    Publisher: <input type="text" id="publisher" />
-    Title: <input type="text" id="title" />
-    Date: <input type="text" id="date" />
-    Language: <input type="text" id="language" />
-    Format: <input type="text" id="formats" />
-    Subject: <input type="text" id="subject" />
-    Description: <input type="text" id="description" />
-    Relation: <input type="text" value="None" id="relation" />
-    Source: <input type="text" value="None" id="source" />
-    Type: <input type="text" id="type" />
-    Coverage: <input type="text" id="coverage" />
-    Rights: <input type="text" value="CC by 4.0" id="rights" />
+
 
 <h3>Group specific metadata</h3>
     <div class="form-group">
@@ -80,34 +68,82 @@
         <option value="mesu">Mesurements</option>
       </select>
    </div>
-<div id="manu" hidden>
-    
-    Cell Type: <input type="text" id="cell" />
-    ECM Composition: <input type="text" id="ecm" />
-    Outer Hydrogel Solution: <input type="text" id="osolution" />
-    Cross Linking Solution: <input type="text" id="csolution" />
-    Nozzle Type: <input type="text" id="nozzle" />
-
-    <!--Formater of the json string to input in hyperledger-->
-  <button onclick="formatmanu()">Build the metadata</button>
-  
-
-</div>
-<div id="mesu" hidden>
-  
-  Number of measurements: <input type="text" id="measurements" />
-  Number of images: <input type="text" id="images" />
-  Image resolution: <input type="text" id="resolution" />
-
-  <!--Formater of the json string to input in hyperledger-->
-  <button onclick="formatmesu()">Build the metadata</button>
- 
-</div>
-
-<script src="pages/scripts/formater_measurements.js"></script>
-<script src="pages/scripts/formater_manufacture.js"></script>
 
 
+<!-- pyscript -->
+
+<script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+
+   <h3>Metadata upload</h3>
+
+   <!--Metadata variables with pyscript-->
+       <p>Upload an Excel file</p>
+       <ol>
+         <li>
+           <label for="upload">Upload:</label>
+           <input type="file" name="upload" id="upload">
+         </li>
+       </ol>
+       <p id="content"></p>
+   
+   <!-- py-script and py-env -->
+   
+   <!-- <py-env>
+   </py-env> -->
+   
+   <py-script>
+     import asyncio
+     import asyncio
+     import js
+     from js import document, FileReader
+     from pyodide import create_proxy
+   
+     def read_complete(event):
+       # event is ProgressEvent
+   
+       content = document.getElementById("content");
+       content.innerText = event.target.result
+   
+   
+     async def process_file(x):
+       fileList = document.getElementById('upload').files
+   
+       for f in fileList:
+         # reader is a pyodide.JsProxy
+         reader = FileReader.new()
+   
+         # Create a Python proxy for the callback function
+         onload_event = create_proxy(read_complete)
+   
+         #console.log("done")
+   
+         reader.onload = onload_event
+   
+         reader.readAsText(f)
+   
+       return
+   
+     def main():
+       # Create a Python proxy for the callback function
+       file_event = create_proxy(process_file)
+   
+       # Set the listener to the callback
+       e = document.getElementById("upload")
+       e.addEventListener("change", file_event, False)
+   
+     main()
+   
+   
+   </py-script>
+   
+   <!-- end py-script and py-env -->
+   
+   <!-- Output -->
+   
+   <div id="container">
+   
+   </div>
+   
 
 
 
