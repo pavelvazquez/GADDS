@@ -14,6 +14,8 @@ services:
       # https://docs.docker.com/compose/networking/
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=dockercompose_default
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
+      # Valid logging levels are case-insensitive strings chosen from
+      # CRITICAL | ERROR | WARNING | NOTICE | INFO | DEBUG
       - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
